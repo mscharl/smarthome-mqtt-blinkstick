@@ -1,0 +1,33 @@
+{
+  "name": "mqtt-blinkstick",
+  "version": "0.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "prestart": "npm run build",
+    "start": "./dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mscharl/smarthome-mqtt-blinkstick.git"
+  },
+  "author": "Michael Scharl",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mscharl/smarthome-mqtt-blinkstick/issues"
+  },
+  "homepage": "https://github.com/mscharl/smarthome-mqtt-blinkstick#readme",
+  "private": true,
+  "devDependencies": {
+    "husky": "^4.2.5",
+    "prettier": "^2.0.5",
+    "pretty-quick": "^2.0.1",
+    "typescript": "^3.8.3"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "pretty-quick --staged --pattern=\"src/**/*.ts\""
+    }
+  }
+}
