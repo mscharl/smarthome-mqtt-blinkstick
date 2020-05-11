@@ -22,7 +22,9 @@
   "homepage": "https://github.com/mscharl/smarthome-mqtt-blinkstick#readme",
   "private": true,
   "dependencies": {
-    "blinkstick": "^1.2.0"
+    "bind-decorator": "^1.0.11",
+    "blinkstick": "^1.2.0",
+    "mqtt": "^4.0.1"
   },
   "devDependencies": {
     "@types/node": "^13.13.5",

@@ -1,6 +1,7 @@
 import fs from 'fs';
 import blinkstick from 'blinkstick';
 import Config from './interfaces/Config';
+import LedClient from './services/LedClient';
 
 const defaultConfigPromise = new Promise<string>((resolve, reject) => {
     fs.readFile(__dirname + '/../config/default.json', (error, data) => {
@@ -30,7 +31,7 @@ Promise.all(configPromises)
             throw new Error('No blinkstick found');
         }
 
-        //LED.setMode(config.mode);
+        new LedClient(LED, config);
     })
     .catch((error) => {
         console.error(error);

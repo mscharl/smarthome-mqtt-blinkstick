@@ -7,6 +7,7 @@ declare module 'blinkstick' {
 
     export interface BlinkStick {
         setMode(mode: BlinkStickProMode): void;
+        setInverse(inverse: boolean): void;
     }
 
     export function findFirst(): BlinkStick;
