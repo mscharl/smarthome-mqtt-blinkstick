@@ -1,13 +1,20 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 declare module 'blinkstick' {
-    export enum BlinkStickProMode {
-        normal = 0,
-        inverse = 1,
-        WS2812 = 2,
+    export interface MorphOptions {
+        channel?: number;
+        index?: number;
+        duration?: number;
+        steps?: number;
     }
 
     export interface BlinkStick {
-        setMode(mode: BlinkStickProMode): void;
+        setMode(mode: 0 | 1 | 2): void;
         setInverse(inverse: boolean): void;
+        getColor(callback: (error: any, red: number, green: number, blue: number) => void): void;
+        getColor(index: number, callback: (error: any, red: number, green: number, blue: number) => void): void;
+        morph(color: string, options?: MorphOptions, callback?: () => void): void;
+        morph(red: number, green: number, blue: number, options?: MorphOptions, callback?: () => void): void;
+        turnOff(): void;
     }
 
     export function findFirst(): BlinkStick;

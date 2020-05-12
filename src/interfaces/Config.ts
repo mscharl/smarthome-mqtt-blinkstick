@@ -1,8 +1,8 @@
-import { BlinkStickProMode } from 'blinkstick';
 import { IClientOptions } from 'mqtt';
+import { BlinkstickProMode } from './BlickstickProMode';
 
 export default interface Config {
-    mode?: BlinkStickProMode;
+    mode?: BlinkstickProMode;
     inverse?: true;
     mqtt_connect_url: string;
     mqtt_connect_options?: IClientOptions;
