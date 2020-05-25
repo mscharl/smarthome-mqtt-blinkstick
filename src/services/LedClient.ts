@@ -14,18 +14,23 @@ export default class LedClient {
         this.blinkStick = blinkStick;
         this.config = config;
 
+        console.log('Starting blinkstick');
+
         if (
             this.config.mode === BlinkstickProMode.normal ||
             this.config.mode === BlinkstickProMode.inverse ||
             this.config.mode === BlinkstickProMode.WS2812
         ) {
+            console.log('Setting mode %o', BlinkstickProMode[this.config.mode]);
             this.blinkStick.setMode(this.config.mode);
         }
 
         if (this.config.inverse === true) {
+            console.log('Setting inverse %o', this.config.inverse);
             this.blinkStick.setInverse(this.config.inverse);
         }
 
+        console.log('Connecting to MQTT Broker');
         this.mqttClient = mqtt.connect(this.config.mqtt_connect_url, this.config.mqtt_connect_options);
         this.mqttClient.on('connect', this.onMqttConnect);
         this.mqttClient.on('message', this.onMqttMessage);
@@ -37,21 +42,36 @@ export default class LedClient {
                 console.error(error);
                 return;
             }
+
+            console.log('Connected');
+            this.runLightInit();
         });
     }
 
     @bind private onMqttMessage(topic: string, message: string): void {
         const payload: MqttPayload = JSON.parse(message);
 
+        console.log('Received message %o', payload);
+
         if (payload.state === 'OFF') {
+            console.log('Turn off');
+            
             this.blinkStick.morph(0, 0, 0, { duration: 1000 }, () => {
                 this.blinkStick.turnOff();
                 this.publishCurrentState();
             });
-        } else if (payload.color?.r && payload.color?.g && payload.color?.b) {
+        } else if (!payload.color) {
+            console.log('Turn on');
+
+            this.blinkStick.morph(255, 128, 0, { duration: 1000 }, () => {
+                this.publishCurrentState();
+            });
+        } else {
             const { r, g, b } = payload.color;
 
-            this.blinkStick.morph(r, g, b, { duration: 500 }, () => {
+            console.log('Morph into rgb(%o,%o,%o)', r, g, b);
+
+            this.blinkStick.morph(r, g, b, { duration: 2000 }, () => {
                 this.publishCurrentState();
             });
         }
@@ -59,9 +79,12 @@ export default class LedClient {
 
     private getCurrentState(): Promise<MqttPayload> {
         return new Promise((resolve, reject) => {
+            console.log('Fetching state');
+
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             this.blinkStick.getColor((error: any, red: number, green: number, blue: number): void => {
                 if (error) {
+                    console.error(error);
                     return reject(error);
                 }
 
@@ -84,8 +107,42 @@ export default class LedClient {
     }
 
     private publishCurrentState(): void {
-        const payload = JSON.stringify(this.getCurrentState());
+        this.getCurrentState().then((state) => {
+            console.log('Publishing state %o', state);
 
-        this.mqttClient.publish(this.config.mqtt_topic_state, payload);
+            const payload = JSON.stringify(state);
+
+            this.mqttClient.publish(this.config.mqtt_topic_state, payload);
+        });
+    }
+
+    private runLightInit(): void {
+        [0, 1]
+            .reduce(
+                (previousOuterPromise) =>
+                    previousOuterPromise.then(() => {
+                        return [
+                            [255, 0, 0],
+                            [0, 255, 0],
+                            [0, 0, 255],
+                        ].reduce(
+                            (previousInnerPromise, [r, g, b]) =>
+                                previousInnerPromise.then(
+                                    () =>
+                                        new Promise((resolve) => {
+                                            this.blinkStick.setColor(r, g, b, {}, () => {
+                                                setTimeout(resolve, 180);
+                                            });
+                                        })
+                                ),
+                            Promise.resolve()
+                        );
+                    }),
+                Promise.resolve()
+            )
+            .then(() => {
+                this.blinkStick.turnOff();
+                this.publishCurrentState();
+            });
     }
 }
