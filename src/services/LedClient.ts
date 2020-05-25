@@ -44,7 +44,10 @@ export default class LedClient {
         const payload: MqttPayload = JSON.parse(message);
 
         if (payload.state === 'OFF') {
-            this.blinkStick.turnOff();
+            this.blinkStick.morph(0, 0, 0, { duration: 1000 }, () => {
+                this.blinkStick.turnOff();
+                this.publishCurrentState();
+            });
         } else if (payload.color?.r && payload.color?.g && payload.color?.b) {
             const { r, g, b } = payload.color;
 
