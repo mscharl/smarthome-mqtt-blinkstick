@@ -55,7 +55,7 @@ export default class LedClient {
 
         if (payload.state === 'OFF') {
             console.log('Turn off');
-            
+
             this.blinkStick.morph(0, 0, 0, { duration: 1000 }, () => {
                 this.blinkStick.turnOff();
                 this.publishCurrentState();
